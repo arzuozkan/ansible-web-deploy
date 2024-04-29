@@ -1,0 +1,421 @@
+---
+- name: Web Sunucu Kurulumu ve Web Sitesi Oluşturma
+  hosts: centos
+  become: yes
+  tasks:
+    - name: Update ve Upgrade Yap
+      yum:
+        name: "*"
+        state: latest
+    - name: EPEL Release Kur
+      yum:
+        name: epel-release
+        state: present
+    - name: Apache Kur
+      yum:
+        name: httpd
+        state: present
+    - name: Apache servislerini başlat
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: Firewalld başlat
+      service:
+        name: firewalld
+        state: started
+    - name: Firewalld Portları Aç
+      firewalld:
+        port: "{{ item }}"
+        state: enabled
+        permanent: yes
+        immediate: yes
+      loop:
+        - 22/tcp
+        - 80/tcp
+        - 443/tcp
+    - name: Selinux'i disable et
+      selinux:
+        state: disabled
+    - name: Web directory generate
+      file:
+        path: /var/www/html
+        state: directory
+    - name: page css generate
+      copy:
+        dest: /var/www/html/page.css
+        content: |
+          /* page.css https://codepen.io/jstn/pen/mdoOZJ*/
+
+          body, html {
+              margin: 0;
+              padding: 0;
+              font: 14px/1.4 'Roboto', sans-serif; /* Yazı tipi ve stil */
+              background: #000;
+              color: #fff;
+              text-align: center;
+          }
+
+          .container {
+              display: flex;
+              justify-content: center; /* İki bölümü de yatayda merkeze alır */
+          }
+
+          .list-container {
+              flex: 1; /* İki bölümün de eşit genişlikte olmasını sağlar */
+              padding: 50px; /* Her iki bölümün etrafında padding */
+          }
+
+          ul {
+              padding: 0;
+              list-style-type: none;
+              text-align: left; /* Liste öğeleri sola yaslanır */
+          }
+
+          li {
+              padding: 5px 0;
+              font-size: 14px; /* Yazı boyutu */
+              font-weight: 300; /* Yazı tipi ince */
+          }
+
+          a {
+              color: #fff;
+              text-decoration: none;
+          }
+
+          a:hover {
+              text-decoration: underline;
+          }
+
+          /* Sol taraftaki bölüme ek padding */
+          .list-container:first-child {
+              padding-left: 15%; /* Ek padding sağ taraftan sağlanır */
+          }
+          ul li:before {
+                      content: '\203A'; /* Liste öğelerinin başına U+203A işareti eklendi */
+                      margin-right: 5px; /* İşaret ile metin arasında boşluk eklendi */
+                    }
+
+    - name: main css page generate
+      copy:
+        dest: /var/www/html/main.css
+        content: |
+          body, html {
+           margin: 0;
+           padding: 0;
+           font: bold 14px/1.4 'Open Sans', arial, sans-serif;
+           background: #000;
+           color: #fff;
+           text-align: center;
+           }
+          .content {
+           position: absolute;
+           top: 50%;
+           left: 50%;
+           transform: translate(-50%, -50%);
+           }
+           ul {
+           margin: 0 auto;
+           padding: 0;
+           list-style: none;
+           text-align: center;
+           }
+           li {
+           display: block;
+           padding: 15px 0;
+           }
+           a {
+           color: #fff;
+           text-transform: uppercase;
+           text-decoration: none;
+           letter-spacing: 0.15em;
+           display: inline-block;
+           padding: 15px 20px;
+           position: relative;
+           }
+           a:after {
+           background: none repeat scroll 0 0 transparent;
+           bottom: 0;
+           content: "";
+           display: block;
+           height: 2px;
+           left: 50%;
+           position: absolute;
+           background: #fff;
+           transition: width 0.3s ease 0s, left 0.3s ease 0s;
+           width: 0;
+           }
+           a:hover:after {
+           width: 100%;
+           left: 0;
+           }
+    - name: Ana Sayfa Oluştur
+      copy:
+        content: >
+          <!DOCTYPE html>
+
+          <html lang="en">
+           <head>
+             <meta charset="UTF-8">
+             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+             <title>DEVOPS</title>
+             <link rel="stylesheet" href="main.css">
+           </head>
+           <body>
+             <div class="content">
+                 <h1>Devops Kurs İçeriği</h1>
+                 <ul>
+                     <li><a href="linux.html">Temel Linux</a></li>
+                     <li><a href="bash.html">Bash Scripting</a></li>
+                     <li><a href="docker.html">Docker / Kubernetes</a></li>
+                     <li><a href="cloud.html">Cloud Devops</a></li>
+                 </ul>
+             </div>
+           </body>
+          </html>
+        dest: /var/www/html/index.html
+    - name: Linux sayfası oluştur
+      copy:
+        content: >
+          <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Temel Linux</title>
+                <link rel="stylesheet" href="page.css"> <!-- CSS dosyasının bağlantısı -->
+            </head>
+            <body>
+                <h1>Temel Linux</h1>
+                <div class="container">
+                    <!-- Sol taraftaki liste -->
+                    <div class="list-container">
+                        <ul>
+                            <li>Linux History and Distributions</li>
+                            <li>Basic Commands and Shell Access</li>
+                            <li>Standard I/O and Pipes</li>
+                            <li>vi/vim Text Editor</li>
+                            <li>Permissions on Linux</li>
+                            <li>Archiving files and OpenSSH</li>
+                            <li>Installation of Linux Operating System</li>
+                            <li>Linux File System Structure</li>
+                            <li>Service Management</li>
+                            <li>Account Management</li>
+                        </ul>
+                    </div>
+                    <!-- Sağ taraftaki liste -->
+                    <div class="list-container">
+                        <ul>
+                            <li>Software Management</li>
+                            <li>Network Management</li>
+                            <li>SELinux</li>
+                            <li>Logical Volume Management (LVM)</li>
+                            <li>Filesystems</li>
+                            <li>ISCSI</li>
+                            <li>NFS Client</li>
+                            <li>Samba Client</li>
+                            <li>Firewall</li>
+                            <li>Process Management</li>
+                            <li>Temel Kavramların Gözden Geçirilmesi</li>
+                        </ul>
+                    </div>
+                </div>
+                <a href="index.html" style="color: #00ff00;">Geri</a>
+            </body>
+            </html>
+
+        dest: /var/www/html/linux.html
+    - name: Bash scripting sayfasi olustur
+      copy:
+        content: >
+            <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Bash</title>
+                  <link rel="stylesheet" href="page.css"> <!-- CSS dosyasının bağlantısı -->
+              </head>
+              <body>
+                <h1> Bash Scripting </h1>
+                  <div class="container">
+                      <!-- Sol taraftaki liste -->
+                      <div class="list-container">
+                          <ul>
+                              <li>UNIX'in tarihi ve evrimi</li>
+                              <li>Dosya sistemi, montaj cihazları ve düğümler</li>
+                              <li>Süreçler, iş parçacıkları, planlama ve sinyaller</li>
+                              <li>Temel UNIX komutlarını kullanma</li>
+                              <li>Farklı UNIX kabuklarının karşılaştırılması</li>
+                              <li>İş için doğru kabuğu seçmek</li>
+                              <li>Kabuk Programlamayı Başlatma</li>
+                              <li>Kabuk komut dosyaları neden önemli bir araçtır?</li>
+                              <li>Bir tercüman seçmek için shebang hattını kullanmak</li>
+                              <li>Kabuk değişkenlerini bildirme ve bunlarla çalışma</li>
+                          </ul>
+                      </div>
+                      <!-- Sağ taraftaki liste -->
+                      <div class="list-container">
+                          <ul>
+                              <li>Test ve aritmetik için yerleşik operatörler</li>
+                              <li>İfade komutunu kullanarak ifadeleri değerlendirme</li>
+                              <li>Değişkenleri if ve case ile test etme</li>
+                              <li>For, while ve Until döngüleri oluşturma ve kontrol etme</li>
+                              <li>Kabuk komut dosyalarınızda hata ayıklama</li>
+                              <li>Düzenli ifadeler</li>
+                              <li>Normal İfade Motoru nasıl çalışır?</li>
+                              <li>Temel ve genişletilmiş düzenli ifadeler arasındaki fark</li>
+                              <li>Kabuk komut dosyalarında normal ifadeleri kullanma seçenekleri</li>
+                              <li>Karakter sınıfları oluşturma ve çoklukları belirleme</li>
+                          </ul>
+                      </div>
+                  </div>
+                  <a href="index.html" style="color: #00ff00;">Geri</a>
+              </body>
+              </html>
+        dest: /var/www/html/bash.html
+    - name: Docker page generate
+      copy:
+        content: >
+          <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Docker</title>
+                <link rel="stylesheet" href="page.css"> <!-- CSS dosyasının bağlantısı -->
+            </head>
+            <body>
+                <h1> Docker / Kubernetes </h1>
+                <div class="container">
+                    <!-- Sol taraftaki liste -->
+                    <div class="list-container">
+                        <ul>
+                            <li>Kubernetes’e Giriş</li>
+                            <li>Kubernetes Mimarisi</li>
+                            <li>Kubernetes Kurulumu</li>
+                            <li>Kubernetes CLI</li>
+                            <li>Konteyner Çalışma Zamanı</li>
+                            <li>Kubernetes İş Yükleri</li>
+                            <li>POD</li>
+                            <li>Kontrol Yaşam Döngüsü</li>
+                            <li>ReplicaSet</li>
+                            <li>Deployment</li>
+                            <li>StatefulSet</li>
+                            <li>DaemonSet</li>
+                            <li>Job</li>
+                            <li>CronJob</li>
+                            <li>Ağ Trafiği</li>
+                            <li>Servisler</li>
+                            <li>ClusterIP</li>
+                            <li>NodePort</li>
+                            <li>Load Balancer</li>
+                        </ul>
+                    </div>
+                    <!-- Sağ taraftaki liste -->
+                    <div class="list-container">
+                        <ul>
+                            <li>External Name</li>
+                            <li>Headless</li>
+                            <li>EndPoint</li>
+                            <li>Servis Proxy</li>
+                            <li>Servis Keşfi</li>
+                            <li>Ingress ve Ingress Controller</li>
+                            <li>Ağ Politikası</li>
+                            <li>Depolama</li>
+                            <li>Volume</li>
+                            <li>Volume Eklentileri</li>
+                            <li>Configmap</li>
+                            <li>Secret</li>
+                            <li>Persistent Volume</li>
+                            <li>Politikalar</li>
+                            <li>Kaynak Kotaları</li>
+                            <li>Kaynak Limitle</li>
+                        </ul>
+                    </div>
+                </div>
+                <a href="index.html" style="color: #00ff00;">Geri</a>
+            </body>
+            </html>
+
+        dest: /var/www/html/docker.html
+    - name: Clouds page generate
+      copy:
+        content: >
+          <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Clouds</title>
+                <link rel="stylesheet" href="page.css"> <!-- CSS dosyasının bağlantısı -->
+            </head>
+            <body>
+                <h1> Cloud Devops </h1>
+                <div class="container">
+                    <!-- Sol taraftaki liste -->
+                    <div class="list-container">
+                        <ul>
+                            <li>Introduction Azure DevOps</li>
+                            <li>Azure Repos</li>
+                            <li>Azure Pipelines</li>
+                            <li>Azure Artifacts</li>
+                            <li>Azure Test Plans</li>
+                            <li>Azure Boards</li>
+                            <li>Source Control Management (SCM)</li>
+                            <li>Version controlling mechanism using Azure Repos</li>
+                            <li>Branching & merging strategy</li>
+                            <li>Various branching & merging strategies and their scenarios</li>
+                            <li>Best Practices</li>
+                            <li>Continuous Integration (CI)</li>
+                            <li>Continuous Integration using Azure Pipelines</li>
+                            <li>Pipeline creation</li>
+                            <li>Environments</li>
+                            <li>Tasks</li>
+                            <li>Workflows</li>
+                            <li>Best Practices</li>
+                            <li>Continuous Deployment (CD)</li>
+                            <li>Deployment Pipelines using Azure Pipelines</li>
+                            <li>Automated workflows for Deployments</li>
+                            <li>Integration with Artifact management</li>
+                            <li>Roll-backs</li>
+                            <li>One-click deployments</li>
+                        </ul>
+                    </div>
+                    <!-- Sağ taraftaki liste -->
+                    <div class="list-container">
+                        <ul>
+                            <li>Best Practices</li>
+                            <li>Continuous Testing</li>
+                            <li>Introduction to Automated test suites</li>
+                            <li>Integration of automation test suite with CD pipeline</li>
+                            <li>Best Practices</li>
+                            <li>Artifactory Management Dependency Management using Azure Artifacts</li>
+                            <li>Deployments with Azure Artifacts</li>
+                            <li>Best Practices</li>
+                            <li>Release Management</li>
+                            <li>Release Automation using Azure Release Pipelines</li>
+                            <li>Fundamentals of Kanban, SCRUM boards in Azure DevOps</li>
+                            <li>DevOps tool-chain integration for traceability</li>
+                            <li>Azure DevOps User Training</li>
+                            <li>Introduction Azure DevOps</li>
+                            <li>Why use a version control system?</li>
+                            <li>Pull requests</li>
+                            <li>Code search</li>
+                            <li>Team Foundation Version Control (TFVC)</li>
+                            <li>Branching Models</li>
+                            <li>Branches v. Labels v. Folders</li>
+                            <li>Sharing code across Projects</li>
+                            <li>Builds and Branches</li>
+                            <li>Mapping Team Foundation Version Control (TFVC) commands and workflow</li>
+                        </ul>
+                    </div>
+                </div>
+                <a href="index.html" style="color: #00ff00;">Geri</a>
+            </body>
+            </html>
+        dest: /var/www/html/cloud.html
+    - name: Apache Servislerini Restart Et
+      service:
+        name: httpd
+        state: restarted
