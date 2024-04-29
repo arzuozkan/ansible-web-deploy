@@ -12,7 +12,9 @@ Ansible playbook oluştururarak,hem ubuntu hem de centos işletim sisteminde ça
 ![image](https://github.com/arzuozkan/ansible-web-deploy/assets/48025290/3316f6be-75f4-4123-b108-ffc648afbd4b)
 
 
-ansible-playbook komutu ile playbook çalıştırılması
+`> ansible-playbook web_ubuntu_setup.yml` 
+
+komutu ile playbook çalıştırılması
 
 https://github.com/arzuozkan/ansible-web-deploy/assets/48025290/72ed8cd4-5506-487e-b592-f9a67607aee4
 
